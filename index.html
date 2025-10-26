@@ -5,136 +5,281 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Cat Pics 🐈</title>
 <style>
-  :root{
-    --bg:#fafafa; --fg:#222; --card:#fff;
-    --gap:.5rem; --radius:8px;
+  :root {
+    --bg: #fafafa;
+    --fg: #222;
+    --card: #fff;
+    --gap: .5rem;
+    --radius: 8px;
+    --transition: background .25s, color .25s;
   }
-  @media (prefers-color-scheme:dark){
-     :root{ --bg:#121212; --fg:#eee; --card:#1e1e1e; }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121212;
+      --fg: #eee;
+      --card: #1e1e1e;
+    }
   }
-  body.dark{ --bg:#121212; --fg:#eee; --card:#1e1e1e; }
-  body{
-    margin:0 auto; max-width:900px; background:var(--bg); color:var(--fg);
-    font-family:system-ui,-apple-system; padding:var(--gap);
-    transition:background .25s;
+  body.dark {
+    --bg: #121212;
+    --fg: #eee;
+    --card: #1e1e1e;
   }
-  header{display:flex; align-items:center; justify-content:space-between}
-  #grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:var(--gap)}
-  .card{
-    background:var(--card); border-radius:var(--radius); overflow:hidden;
-    opacity:0; animation:fade .4s forwards;
+  body {
+    margin: 0 auto;
+    max-width: 900px;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: system-ui, -apple-system, sans-serif;
+    padding: var(--gap);
+    transition: var(--transition);
+    min-height: 100vh;
   }
-  @keyframes fade{to{opacity:1}}
-  .card img{width:100%; display:block; cursor:zoom-in}
-  #lightbox{
-    position:fixed; inset:0; background:rgba(0,0,0,.85);
-    display:flex; align-items:center; justify-content:center;
-    opacity:0; pointer-events:none; transition:opacity .25s;
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: var(--gap);
   }
-  #lightbox.show{opacity:1; pointer-events:auto}
-  #lightbox img{max-width:90%; max-height:90%; border-radius:var(--radius)}
-  #dropZone{
-    border:2px dashed var(--fg); border-radius:var(--radius);
-    padding:2rem; text-align:center; margin-block:1rem;
+  #grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: var(--gap);
   }
-  #dropZone.dragover{background:var(--card)}
-  button,input{font-size:1rem; padding:.4rem .6rem}
-  .hidden{display:none}
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    overflow: hidden;
+    opacity: 0;
+    animation: fade .4s forwards;
+    box-shadow: 0 2px 6px rgba(0,0,0,.06);
+    transition: box-shadow .2s;
+  }
+  .card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,.12);
+  }
+  @keyframes fade { to { opacity: 1 } }
+  .card img {
+    width: 100%;
+    display: block;
+    cursor: zoom-in;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    transition: transform .2s;
+  }
+  .card img:hover {
+    transform: scale(1.03);
+  }
+  #lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s;
+    z-index: 1000;
+  }
+  #lightbox.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  #lightbox img {
+    max-width: 90vw;
+    max-height: 90vh;
+    border-radius: var(--radius);
+    box-shadow: 0 6px 32px rgba(0,0,0,.3);
+    background: var(--card);
+    padding: .5rem;
+  }
+  #dropZone {
+    border: 2px dashed var(--fg);
+    border-radius: var(--radius);
+    padding: 2rem;
+    text-align: center;
+    margin-block: 1rem;
+    background: var(--bg);
+    transition: background .2s, border-color .2s;
+    cursor: pointer;
+    user-select: none;
+  }
+  #dropZone.dragover {
+    background: var(--card);
+    border-color: #888;
+  }
+  button, input {
+    font-size: 1rem;
+    padding: .4rem .6rem;
+    border-radius: var(--radius);
+    border: none;
+    background: var(--card);
+    color: var(--fg);
+    cursor: pointer;
+    margin-left: .3rem;
+    transition: background .2s, color .2s;
+  }
+  button:hover, input:hover {
+    background: #eee;
+    color: #222;
+  }
+  .hidden { display: none }
+  @media (max-width: 500px) {
+    header { flex-direction: column; align-items: flex-start; gap: .5rem; }
+    #dropZone { padding: 1rem; }
+  }
 </style>
 </head>
 <body>
 <header>
   <h1>Cat Pics 🐈</h1>
   <div>
-    <button id="addBtn">+ Add</button>
-    <button id="darkBtn">🌗</button>
+    <button id="addBtn" title="Add cat images">+ Add</button>
+    <button id="darkBtn" title="Toggle dark mode">🌗</button>
+    <button id="clearBtn" title="Clear all cat pics">🗑️</button>
   </div>
 </header>
 
-<input type="file" accept="image/*" id="fileIn" class="hidden" multiple/>
-<div id="dropZone">Drop images here or paste (<kbd>Ctrl+V</kbd>)</div>
+<input type="file" accept="image/*" id="fileIn" class="hidden" multiple />
+<div id="dropZone" tabindex="0">Drop images here or paste (<kbd>Ctrl+V</kbd>)</div>
 <section id="grid"></section>
-
 <div id="lightbox"><img src="" alt=""/></div>
 
 <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
 <script>
 /* ---------- config ---------- */
-const store   = localforage.createInstance({name:"catPics"});
-const grid    = document.getElementById('grid');
-const fileIn  = document.getElementById('fileIn');
-const lightbox= document.getElementById('lightbox');
-const lbImg   = lightbox.querySelector('img');
-let   count   = 0;
+const store    = localforage.createInstance({name: "catPics"});
+const grid     = document.getElementById('grid');
+const fileIn   = document.getElementById('fileIn');
+const lightbox = document.getElementById('lightbox');
+const lbImg    = lightbox.querySelector('img');
+const dz       = document.getElementById('dropZone');
+const clearBtn = document.getElementById('clearBtn');
+let   cats     = new Map();
 
 /* ---------- utils ---------- */
-const $ = q=>document.querySelector(q);
-const compress = (file, maxW=300)=>new Promise(res=>{
-  const img=new Image(), c=document.createElement('canvas'), ctx=c.getContext('2d');
-  img.onload=()=>{
-    const ratio=img.height/img.width;
-    c.width=maxW; c.height=maxW*ratio;
-    ctx.drawImage(img,0,0,c.width,c.height);
-    res(c.toDataURL('image/jpeg',.7));
+const $ = q => document.querySelector(q);
+const compress = (file, maxW = 300) => new Promise(res => {
+  const img = new Image();
+  img.onload = () => {
+    const ratio = img.height / img.width;
+    const c = document.createElement('canvas');
+    c.width = maxW;
+    c.height = maxW * ratio;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0, c.width, c.height);
+    res(c.toDataURL('image/jpeg', 0.7));
   };
-  img.src=URL.createObjectURL(file);
+  img.src = URL.createObjectURL(file);
 });
+function createBlobUrl(file) {
+  return URL.createObjectURL(file);
+}
 
 /* ---------- render ---------- */
-async function loadCats(){
-  grid.innerHTML='';
-  await store.iterate(async (data,key)=>{
+async function loadCats() {
+  grid.innerHTML = '';
+  cats.clear();
+  await store.iterate((data, key) => {
+    cats.set(key, data); // cache keys for delete
     const [thumb, full] = data;
-    const card=document.createElement('div');
-    card.className='card';
-    card.innerHTML=`<img src="${thumb}" data-full="${full}" alt="cat"/>`;
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <img src="${thumb}" data-full="${full}" alt="cat"/>
+      <button class="deleteBtn" data-key="${key}" title="Delete">&#10006;</button>
+    `;
     grid.appendChild(card);
   });
 }
 loadCats();
 
 /* ---------- add cats ---------- */
-async function saveCat(file){
-  const thumb=await compress(file);
-  const full=await file.text().then(t=>URL.createObjectURL(file)); // keep blob url for now
-  await store.setItem(`${Date.now()}_${file.name}`, [thumb, full]);
+async function saveCat(file) {
+  if (!file.type.startsWith('image/')) return;
+  const thumb = await compress(file);
+  const full = createBlobUrl(file);
+  const key = `${Date.now()}_${Math.random().toString(36).slice(2)}_${file.name}`;
+  await store.setItem(key, [thumb, full]);
   loadCats();
 }
-fileIn.onchange=()=>[...fileIn.files].forEach(saveCat);
-$('#addBtn').onclick=()=>fileIn.click();
+fileIn.onchange = () => [...fileIn.files].forEach(saveCat);
+$('#addBtn').onclick = () => fileIn.click();
 
 /* ---------- drag & drop + paste ---------- */
-const dz=$('#dropZone');
-['dragenter','dragover','dragleave','drop'].forEach(ev=>{
-  dz.addEventListener(ev, e=>{ e.preventDefault(); dz.classList.toggle('dragover',ev=='dragenter'||ev=='dragover'); });
+['dragenter', 'dragover'].forEach(ev => {
+  dz.addEventListener(ev, e => {
+    e.preventDefault();
+    dz.classList.add('dragover');
+  });
 });
-dz.addEventListener('drop',e=>{
-  [...e.dataTransfer.files].filter(f=>f.type.startsWith('image/')).forEach(saveCat);
+['dragleave', 'drop'].forEach(ev => {
+  dz.addEventListener(ev, e => {
+    e.preventDefault();
+    dz.classList.remove('dragover');
+  });
 });
-window.addEventListener('paste',e=>{
-  [...e.clipboardData.files].filter(f=>f.type.startsWith('image/')).forEach(saveCat);
+dz.addEventListener('drop', e => {
+  [...e.dataTransfer.files].forEach(saveCat);
+});
+dz.addEventListener('click', () => fileIn.click());
+dz.addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') fileIn.click();
+});
+window.addEventListener('paste', e => {
+  [...e.clipboardData.files].forEach(saveCat);
 });
 
 /* ---------- lightbox ---------- */
-grid.addEventListener('click',e=>{
-  if(e.target.tagName==='IMG'){
-    lbImg.src=e.target.dataset.full || e.target.src;
+grid.addEventListener('click', e => {
+  const img = e.target.closest('img');
+  if (img) {
+    lbImg.src = img.dataset.full || img.src;
     lightbox.classList.add('show');
   }
+  // delete button
+  const delBtn = e.target.closest('.deleteBtn');
+  if (delBtn) {
+    const key = delBtn.dataset.key;
+    store.removeItem(key).then(loadCats);
+    e.stopPropagation();
+  }
 });
-lightbox.addEventListener('click',()=>lightbox.classList.remove('show'));
+lightbox.addEventListener('click', () => {
+  lbImg.src = '';
+  lightbox.classList.remove('show');
+});
+document.addEventListener('keydown', e => {
+  if (lightbox.classList.contains('show') && (e.key === 'Escape' || e.key === ' ')) {
+    lbImg.src = '';
+    lightbox.classList.remove('show');
+  }
+});
 
 /* ---------- dark mode ---------- */
-$('#darkBtn').onclick=()=>document.body.classList.toggle('dark');
+$('#darkBtn').onclick = () => document.body.classList.toggle('dark');
+
+/* ---------- clear all ---------- */
+clearBtn.onclick = async () => {
+  if (confirm('Clear all cat pics?')) {
+    await store.clear();
+    loadCats();
+  }
+};
 
 /* ---------- service worker cache (offline) ---------- */
-if('serviceWorker' in navigator){
-  const sw='data:text/javascript,'+encodeURIComponent(`
+if ('serviceWorker' in navigator) {
+  const sw = 'data:text/javascript,' + encodeURIComponent(`
     const CACHE='cat-v1';
-    self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['/']))));
-    self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));
+    self.addEventListener('install',e=>e.waitUntil(
+      caches.open(CACHE).then(c=>c.addAll(['/']))
+    ));
+    self.addEventListener('fetch',e=>e.respondWith(
+      caches.match(e.request).then(r=>r||fetch(e.request))
+    ));
   `);
-  navigator.serviceWorker.register(sw);
+  navigator.serviceWorker.register(sw).catch(()=>{});
 }
 </script>
 </body>
